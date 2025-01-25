@@ -1,6 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, APIRouter, Request, Response, status
+from fastapi import Depends, APIRouter, Request, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,7 +11,6 @@ from app.crud.user_repository import (
     create_new_user,
 )
 from app.database.sql_database import get_session
-
 from app.exceptions.exceptions import (
     EmailAlreadyExistsException,
     IncorrectEmailOrPasswordException,
@@ -26,11 +25,6 @@ from app.security.pwd_crypt import get_hashed_password
 loginrouter = APIRouter()
 
 templates = Jinja2Templates(directory="app/templates")
-
-
-@loginrouter.get("/", response_class=HTMLResponse)
-async def get_auth_page(request: Request):
-    return templates.TemplateResponse("auth.html", {"request": request})
 
 
 @loginrouter.post(
