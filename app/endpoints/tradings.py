@@ -114,11 +114,11 @@ async def get_tradings(
     # hash filters and params to get cached data
     key = hash_query_params(trades_filter, params)
 
-    cached_trades = await get_trading_results(session, trades_filter, params)
+    cached_trades = await get_trading_dates_redis(redis, key)
     if cached_trades:
         return Response(cached_trades)
 
-    paginated_trades = await get_dynamics(session, trades_filter, params)
+    paginated_trades = await get_trading_results(session, trades_filter, params)
     serialized_data = query_to_json(paginated_trades)
     unix_timestamp = calculate_timestamp()
 
