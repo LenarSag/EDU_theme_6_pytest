@@ -4,17 +4,17 @@ from typing import Annotated
 from fastapi import Depends, APIRouter, Response
 from fastapi_filter import FilterDepends
 from fastapi_pagination import Page, Params
-from pydantic import Json
 from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
-
+from app.crud.cache_repository import (
+    get_trading_dates_redis,
+    set_trading_data_to_redis,
+)
 from app.crud.trades_repository import (
     get_dynamics,
     get_last_trading_dates,
-    get_trading_dates_redis,
     get_trading_results,
-    set_trading_data_to_redis,
 )
 from app.database.redis_db import get_redis
 from app.database.sql_database import get_session

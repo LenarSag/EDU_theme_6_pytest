@@ -1,7 +1,5 @@
-import json
-from fastapi_pagination import Page, Params
+from fastapi_pagination import Params
 from fastapi_pagination.ext.sqlalchemy import paginate
-from redis import Redis
 from sqlalchemy import func
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -12,7 +10,6 @@ from app.filters.spimex_filter import (
     TradingResultsLastDatesFilter,
 )
 from app.models.spimex import TradingResults
-from app.schemas.spimex import Trading
 
 
 async def get_last_trading_dates(
@@ -29,19 +26,6 @@ async def get_last_trading_dates(
     query = trades_filter.sort(query)
 
     return await paginate(session, query, params)
-
-
-async def get_trading_dates_redis(redis: Redis, key: str):
-    trades = await redis.get(f"trades:{key}")
-    if trades:
-        return trades
-    return None
-
-
-async def set_trading_data_to_redis(
-    redis: Redis, key: str, data: dict, unix_timestamp: int
-) -> None:
-    await redis.set(f"trades:{key}", data, ex=unix_timestamp)
 
 
 async def get_dynamics(
