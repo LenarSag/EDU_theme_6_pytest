@@ -17,11 +17,13 @@ from app.exceptions.exceptions import (
     UserNotFoundException,
 )
 from app.models.user import User
+from app.crud.cache_repository import (
+    get_user_by_id_from_cache,
+    set_user_to_redis,
+)
 from app.crud.user_repository import (
     get_user_by_email,
     get_user_by_id,
-    get_user_by_id_from_cache,
-    set_user_to_redis,
 )
 from app.database.sql_database import get_session
 from app.schemas.user import UserOut
