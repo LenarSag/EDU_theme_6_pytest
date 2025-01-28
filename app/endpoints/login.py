@@ -1,7 +1,6 @@
 from typing import Annotated
 
-from fastapi import Depends, APIRouter, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi import Depends, APIRouter, status
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 

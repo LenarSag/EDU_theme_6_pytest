@@ -7,18 +7,26 @@ from jwt.exceptions import InvalidTokenError
 from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from pydantic import EmailStr
+from redis import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.database.redis_db import get_redis
 from app.exceptions.exceptions import (
     InvalidTokenException,
     TokenExpiredException,
-    TokenNotFoundException,
     UserNotFoundException,
 )
 from app.models.user import User
-from app.crud.user_repository import get_user_by_email, get_user_by_id
+from app.crud.user_repository import (
+    get_user_by_email,
+    get_user_by_id,
+    get_user_by_id_from_cache,
+    set_user_to_redis,
+)
 from app.database.sql_database import get_session
+from app.schemas.user import UserOut
 from app.security.pwd_crypt import verify_password
+from app.utils.utils import calculate_timestamp
 from config import ACCESS_TOKEN_EXPIRE_MINUTES, ALGORITHM, API_URL, SECRET_KEY
 
 
@@ -50,8 +58,10 @@ def create_access_token(user: User) -> str:
 
 
 async def get_current_user(
-    session: AsyncSession = Depends(get_session), token: str = Depends(oauth2_scheme)
-) -> Optional[User]:
+    session: AsyncSession = Depends(get_session),
+    redis: Redis = Depends(get_redis),
+    token: str = Depends(oauth2_scheme),
+) -> Optional[UserOut]:
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except InvalidTokenError:
@@ -71,7 +81,17 @@ async def get_current_user(
     if user_id is None:
         raise InvalidTokenException
 
+    cached_user = await get_user_by_id_from_cache(redis, user_id)
+    if cached_user:
+        return cached_user
+
     user = await get_user_by_id(session, user_id)
     if user is None:
         raise UserNotFoundException
-    return user
+
+    user_pydantic = UserOut.model_validate(user)
+    unix_timestamp = calculate_timestamp()
+
+    await set_user_to_redis(redis, user_pydantic, unix_timestamp)
+
+    return user_pydantic
