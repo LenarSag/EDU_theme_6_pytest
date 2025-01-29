@@ -1,3 +1,4 @@
+import asyncio
 import json
 from typing import Annotated
 
@@ -32,7 +33,7 @@ from app.utils.utils import calculate_timestamp, hash_query_params
 tradesrouter = APIRouter()
 
 
-def query_to_json(trades: Page[Trading]):
+def query_to_json(trades: Page[Trading]) -> str:
     items_dict = [
         Trading.model_dump(Trading.model_validate(item)) for item in trades.items
     ]
@@ -62,15 +63,15 @@ async def get_last_tradings(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     # hash filters and params to get cached data
-    key = hash_query_params(trades_filter, params)
+    key = await asyncio.to_thread(hash_query_params, trades_filter, params)
 
     cached_trades = await get_trading_dates_redis(redis, key)
     if cached_trades:
         return Response(cached_trades)
 
     paginated_trades = await get_last_trading_dates(session, trades_filter, params)
-    serialized_data = query_to_json(paginated_trades)
-    unix_timestamp = calculate_timestamp()
+    serialized_data = await asyncio.to_thread(query_to_json, paginated_trades)
+    unix_timestamp = await asyncio.to_thread(calculate_timestamp)
 
     await set_trading_data_to_redis(redis, key, serialized_data, unix_timestamp)
 
@@ -88,15 +89,15 @@ async def get_period_tradings(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     # hash filters and params to get cached data
-    key = hash_query_params(trades_filter, params)
+    key = await asyncio.to_thread(hash_query_params, trades_filter, params)
 
     cached_trades = await get_trading_dates_redis(redis, key)
     if cached_trades:
         return Response(cached_trades)
 
     paginated_trades = await get_dynamics(session, trades_filter, params)
-    serialized_data = query_to_json(paginated_trades)
-    unix_timestamp = calculate_timestamp()
+    serialized_data = await asyncio.to_thread(query_to_json, paginated_trades)
+    unix_timestamp = await asyncio.to_thread(calculate_timestamp)
 
     await set_trading_data_to_redis(redis, key, serialized_data, unix_timestamp)
 
@@ -112,15 +113,15 @@ async def get_tradings(
     current_user: Annotated[User, Depends(get_current_user)],
 ):
     # hash filters and params to get cached data
-    key = hash_query_params(trades_filter, params)
+    key = await asyncio.to_thread(hash_query_params, trades_filter, params)
 
     cached_trades = await get_trading_dates_redis(redis, key)
     if cached_trades:
         return Response(cached_trades)
 
     paginated_trades = await get_trading_results(session, trades_filter, params)
-    serialized_data = query_to_json(paginated_trades)
-    unix_timestamp = calculate_timestamp()
+    serialized_data = await asyncio.to_thread(query_to_json, paginated_trades)
+    unix_timestamp = await asyncio.to_thread(calculate_timestamp)
 
     await set_trading_data_to_redis(redis, key, serialized_data, unix_timestamp)
 
