@@ -11,3 +11,4 @@ async def redis_pool() -> Redis:
 
 async def get_redis(redis: Redis = Depends(redis_pool)):
     yield redis
+    await redis.close()
