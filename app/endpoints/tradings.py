@@ -78,7 +78,7 @@ async def get_last_tradings(
     return Response(serialized_data)
 
 
-@tradesrouter.get("/get-dynamics", response_model=Page[Trading])
+@tradesrouter.get("/get-dynamics", response_class=Response)
 async def get_period_tradings(
     trades_filter: Annotated[
         TradingResultsDynamicsFilter, FilterDepends(TradingResultsDynamicsFilter)
@@ -104,7 +104,7 @@ async def get_period_tradings(
     return Response(serialized_data)
 
 
-@tradesrouter.get("/get-trading-results", response_model=Page[Trading])
+@tradesrouter.get("/get-trading-results", response_class=Response)
 async def get_tradings(
     trades_filter: Annotated[TradingResultsFilter, FilterDepends(TradingResultsFilter)],
     params: Annotated[Params, Depends()],

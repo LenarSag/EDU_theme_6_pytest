@@ -2,8 +2,10 @@ from httpx import AsyncClient, ASGITransport
 
 from fastapi import status
 import pytest
+
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
+
 
 from app.database.sql_database import get_session
 from app import models
@@ -35,11 +37,6 @@ async def override_get_session():
 
 
 app.dependency_overrides[get_session] = override_get_session
-
-
-async def lifespan():
-    async with test_engine.begin() as conn:
-        await conn.run_sync(models.Base.metadata.create_all)
 
 
 @pytest.fixture
@@ -169,7 +166,7 @@ async def test_get_dynamics(auth_headers):
 async def test_get_trading_results(auth_headers):
     async with AsyncClient(transport=transport, base_url=BASE_URL) as client:
         response = await client.get(
-            f"{API_URL}/trades/get-trading-results", headers=auth_headers
+            f"{API_URL}/trades/get-last-trading-dates", headers=auth_headers
         )
         assert response.status_code == status.HTTP_200_OK
         data = response.json()
