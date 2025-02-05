@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request, status
-from fastapi.exceptions import ResponseValidationError
+from fastapi.exceptions import ResponseValidationError, ValidationException
 from fastapi.responses import JSONResponse
+from pydantic import ValidationError
 import uvicorn
 
 from app.endpoints.login import loginrouter
@@ -16,8 +17,28 @@ app.include_router(tradesrouter, prefix=f"{API_URL}/trades")
 
 
 @app.exception_handler(ResponseValidationError)
-async def custom_pydantic_validation_error_handler(
+async def custom_response_validation_error_handler(
     request: Request, exc: ResponseValidationError
+):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.errors()},
+    )
+
+
+@app.exception_handler(ValidationError)
+async def custom_pydantic_validation_error_handler(
+    request: Request, exc: ValidationError
+):
+    return JSONResponse(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        content={"detail": exc.errors()},
+    )
+
+
+@app.exception_handler(ValidationException)
+async def custom_fastapi_validation_error_handler(
+    request: Request, exc: ValidationError
 ):
     return JSONResponse(
         status_code=status.HTTP_400_BAD_REQUEST,

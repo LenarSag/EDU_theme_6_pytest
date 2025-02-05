@@ -1,5 +1,4 @@
 from datetime import datetime, time, timedelta
-import threading
 import hashlib
 
 
@@ -10,7 +9,6 @@ from config import REDIS_EXP_HOUR, REDIS_EXP_MIN
 
 
 def calculate_timestamp() -> int:
-    print(f"Running calculate_timestamp in thread: {threading.get_ident()}")
     now = datetime.now()
     reset_time = datetime.combine(now.date(), time(REDIS_EXP_HOUR, REDIS_EXP_MIN))
     if reset_time <= now:

@@ -1,7 +1,6 @@
 from typing import Annotated
 
 from fastapi import Depends, APIRouter, status
-from fastapi.templating import Jinja2Templates
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
@@ -22,8 +21,6 @@ from app.security.pwd_crypt import get_hashed_password
 
 
 loginrouter = APIRouter()
-
-templates = Jinja2Templates(directory="app/templates")
 
 
 @loginrouter.post(
